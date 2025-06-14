@@ -1,7 +1,7 @@
-require("dotenv").config(); // <--- BUNU EKLE
+require("dotenv").config();
 
 const { REST, Routes } = require("discord.js");
-const { client_id, guild_id, token } = process.env;
+const { CLIENT_ID, GUILD_ID, TOKEN } = process.env;
 const fs = require("fs");
 
 const commands = [];
@@ -13,13 +13,13 @@ for (const file of commandFiles) {
   commands.push(command.data.toJSON());
 }
 
-const rest = new REST({ version: "10" }).setToken(token);
+const rest = new REST({ version: "10" }).setToken(TOKEN);
 
 (async () => {
   try {
     console.log("⏳ Slash komutlar yükleniyor...");
 
-    await rest.put(Routes.applicationGuildCommands(client_id, guild_id), {
+    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
       body: commands,
     });
 
@@ -28,3 +28,4 @@ const rest = new REST({ version: "10" }).setToken(token);
     console.error("❌ Slash komut yüklenemedi:", error);
   }
 })();
+
