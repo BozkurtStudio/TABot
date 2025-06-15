@@ -3,7 +3,7 @@ const { Collection, EmbedBuilder } = require("discord.js");
 const medyaLimitleri = new Collection();
 const LIMIT = 5;
 const SURE_MS = 60 * 60 * 1000;
-const KANAL_ID = "1093888649688514590";
+const KANAL_ID = "1381741570562199673";
 
 module.exports = {
     async execute(message, client) {
