@@ -1,7 +1,7 @@
 const { Collection, EmbedBuilder, PermissionsBitField } = require("discord.js");
 
 const medyaLimitleri = new Collection();
-const LIMIT = 5;
+const LIMIT = 15;
 const SURE_MS = 60 * 60 * 1000;
 const KANAL_ID = "1381741570562199673";
 
