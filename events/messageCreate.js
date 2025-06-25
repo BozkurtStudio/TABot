@@ -27,7 +27,7 @@ module.exports = {
 
         // ===== Medya spam engeli =====
         if (message.channel.id === KANAL_ID && message.attachments.size > 0) {
-            if (message.member.permissions.has(PermissionsBitField.Flags.Administrator)) return;
+            if (message.member.permissions.has(PermissionsBitField.Flags.ManageChannels)) return;
             
             const userId = message.author.id;
             const now = Date.now();
