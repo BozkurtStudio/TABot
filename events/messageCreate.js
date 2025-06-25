@@ -1,4 +1,4 @@
-const { Collection, EmbedBuilder } = require("discord.js");
+const { Collection, EmbedBuilder,PermissionsBitField } = require("discord.js");
 
 const medyaLimitleri = new Collection();
 const LIMIT = 5;
