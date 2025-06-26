@@ -4,6 +4,11 @@ const {
   ButtonStyle,
 } = require("discord.js");
 
+const { saveOylamalar } = require("../jsonbin");
+
+// Buraya rol ID'sini yaz
+const KONGRE_ROL_ID = "1381733725800366132"; 
+
 module.exports = {
   name: "interactionCreate",
   async execute(interaction, client) {
@@ -28,6 +33,14 @@ module.exports = {
         if (oylama.oylar[interaction.user.id] !== undefined) {
           return interaction.reply({
             content: "❌ Zaten oy kullandınız.",
+            ephemeral: true,
+          });
+        }
+
+        const member = await interaction.guild.members.fetch(interaction.user.id);
+        if (!member.roles.cache.has(KONGRE_ROL_ID)) {
+          return interaction.reply({
+            content: "❌ Bu oylamaya katılmak için Kongre Üyesi olmalısın.",
             ephemeral: true,
           });
         }
@@ -81,6 +94,7 @@ module.exports = {
         }
 
         oylama.oylar[interaction.user.id] = parseInt(index);
+        await saveOylamalar(client.oylamalar);
 
         const embed = {
           title: "✅ Oy verildi",
