@@ -7,6 +7,8 @@ const {
     PermissionsBitField
 } = require("discord.js");
 
+const { saveOylamalar } = require("../jsonbin");
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("oylama")
@@ -71,6 +73,8 @@ module.exports = {
             baslik
         };
 
+        await saveOylamalar(client.oylamalar);
+
         // Süre mesajını düzgün şekilde oluştur
         let sureMetni = "";
         if (saat > 0 && dakika > 0) {
@@ -128,11 +132,21 @@ async function bitirOylama(oylamaId, client, guild) {
         .map((secenek, i) => {
             const oy = sayilar[i];
             const yuzde = toplamOy === 0 ? 0 : ((oy / toplamOy) * 100).toFixed(1);
-            const barUzunluk = Math.round((yuzde / 100) * 20); // max 20 karakterlik bar
+            const barUzunluk = Math.round((yuzde / 100) * 20);
             const bar = "█".repeat(barUzunluk) + "░".repeat(20 - barUzunluk);
+            return {
+                secenek,
+                oy,
+                yuzde,
+                bar
+            };
+        })
+        .sort((a, b) => b.oy - a.oy) // Burada sıralama ekliyoruz
+        .map(({ secenek, oy, yuzde, bar }) => {
             return `**${secenek}**\n🗳️ ${oy} oy (%${yuzde})\n${bar}`;
         })
         .join("\n\n");
+
 
     const kanal = await guild.channels.fetch(oylama.kanalId);
     if (kanal) {
@@ -142,12 +156,14 @@ async function bitirOylama(oylamaId, client, guild) {
                 new EmbedBuilder()
                     .setTitle("Sonuçlar")
                     .setDescription(sonuc)
-                    .setColor("Green"),
+                    .setColor("Green")
+                    .setFooter({ text: `Toplam Oy: ${toplamOy}` }),
             ],
         });
     }
 
     delete client.oylamalar[oylamaId];
+    await saveOylamalar(client.oylamalar);
 }
 
 

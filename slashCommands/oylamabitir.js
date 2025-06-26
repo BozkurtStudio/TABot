@@ -1,9 +1,12 @@
 const { SlashCommandBuilder, PermissionsBitField } = require("discord.js");
 const { bitirOylama } = require("./oylama");
 
+
+const KURUL_BASKANI_ID = "1382797957354487839";
+
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("oylamabitir")
+    .setName("oylama-bitir")
     .setDescription("Devam eden bir oylamayı bitirir")
     .addStringOption((opt) =>
       opt.setName("id").setDescription("Oylama ID'si").setRequired(true)
@@ -11,6 +14,15 @@ module.exports = {
     .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator),
 
   async execute(interaction, client) {
+    const member = await interaction.guild.members.fetch(interaction.user.id);
+
+    if (!member.roles.cache.has(KURUL_BASKANI_ID)) {
+      return interaction.reply({
+        content: "❌ Bu komutu kullanmak için gerekli role sahip değilsin.",
+        ephemeral: true,
+      });
+    }
+
     const id = interaction.options.getString("id");
 
     if (!client.oylamalar?.[id]) {
