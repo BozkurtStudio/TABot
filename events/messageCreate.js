@@ -1,9 +1,70 @@
 const { Collection, EmbedBuilder, PermissionsBitField } = require("discord.js");
+const axios = require("axios");
 
 const medyaLimitleri = new Collection();
-const LIMIT = 15;
+const LIMIT = 5;
 const SURE_MS = 60 * 60 * 1000;
 const KANAL_ID = "1381741570562199673";
+
+const GEMINI_MODEL = "gemini-2.5-flash"; 
+
+const apiKeys = [
+    "AIzaSyDcZ753lRqIl8Oa79cSrFcCfYS8fQ8QLjI",
+    "AIzaSyDCmPm12FwQVYrBXjb8esaexCH2jf4rdWo",
+    "AIzaSyCqWGBEKe3OIqkYhFOMYCMg0v4b7R6VaHU"
+];
+
+let currentKeyIndex = 0;
+
+function getNextApiKey() {
+    currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
+    return apiKeys[currentKeyIndex];
+}
+
+
+async function geminiYanıtVer(message) {
+    const prompt = message.content.replace(`<@${message.client.user.id}>`, "").trim();
+    if (!prompt) return;
+
+    for (let i = 0; i < apiKeys.length; i++) {
+        const apiKey = apiKeys[currentKeyIndex];
+
+        try {
+            await message.channel.sendTyping();
+
+            const response = await axios.post(
+                `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+                {
+                    contents: [
+                        {
+                            parts: [{ text: prompt }]
+                        }
+                    ]
+                },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-goog-api-key": apiKey
+                    }
+                }
+            );
+
+            const yanit = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (yanit) {
+                message.reply(yanit.slice(0, 2000));
+            } else {
+                message.reply("❗ Gemini'den cevap alınamadı.");
+            }
+            return; // Başarılıysa döngüyü kır
+        } catch (error) {
+            console.error(`API Key ${apiKey} başarısız oldu, diğerine geçiliyor...`, error.response?.data || error.message);
+            getNextApiKey(); // Bir sonraki API key'e geç
+        }
+    }
+
+    message.reply("❌ Günlük istek sınırına ulaşıldı.");
+}
+
 
 module.exports = {
     async execute(message, client) {
@@ -27,8 +88,7 @@ module.exports = {
 
         // ===== Medya spam engeli =====
         if (message.channel.id === KANAL_ID && message.attachments.size > 0) {
-            if (message.member.permissions.has(PermissionsBitField.Flags.ManageChannels)) return;
-            if (message.member.roles.cache.has(1381733725800366132)) return;
+            if (message.member.permissions.has(PermissionsBitField.Flags.Administrator)) return;
             
             const userId = message.author.id;
             const now = Date.now();
@@ -52,7 +112,10 @@ module.exports = {
             kullaniciVerisi.push(now);
             medyaLimitleri.set(userId, kullaniciVerisi);
         }
+
+        if (message.mentions.has(client.user) && !message.author.bot) {
+            return geminiYanıtVer(message);
+        }
     }
 };
-
 
