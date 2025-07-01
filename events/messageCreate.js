@@ -119,9 +119,7 @@ module.exports = {
             medyaLimitleri.set(userId, kullaniciVerisi);
         }
 
-        if (message.mentions.has(client.user) && !message.author.bot) {
-            return geminiYanıtVer(message);
-        }
+    
     }
 };
 
