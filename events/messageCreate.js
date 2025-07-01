@@ -22,9 +22,17 @@ function getNextApiKey() {
 }
 
 
+const sohbetGecmisi = new Map(); // userId → geçmiş dizisi
+
 async function geminiYanıtVer(message) {
     const prompt = message.content.replace(`<@${message.client.user.id}>`, "").trim();
     if (!prompt) return;
+
+    const userId = message.author.id;
+    const gecmis = sohbetGecmisi.get(userId) || [];
+
+    // Yeni kullanıcı mesajını geçmişe ekle
+    gecmis.push({ role: "user", parts: [{ text: prompt }] });
 
     for (let i = 0; i < apiKeys.length; i++) {
         const apiKey = apiKeys[currentKeyIndex];
@@ -34,13 +42,7 @@ async function geminiYanıtVer(message) {
 
             const response = await axios.post(
                 `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
-                {
-                    contents: [
-                        {
-                            parts: [{ text: prompt }]
-                        }
-                    ]
-                },
+                { contents: gecmis },
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -51,6 +53,10 @@ async function geminiYanıtVer(message) {
 
             const yanit = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
             if (yanit) {
+                // Modelin cevabını geçmişe ekle
+                gecmis.push({ role: "model", parts: [{ text: yanit }] });
+                sohbetGecmisi.set(userId, gecmis);
+
                 message.reply(yanit.slice(0, 2000));
             } else {
                 message.reply("❗ Gemini'den cevap alınamadı.");
@@ -58,11 +64,11 @@ async function geminiYanıtVer(message) {
             return; // Başarılıysa döngüyü kır
         } catch (error) {
             console.error(`API Key ${apiKey} başarısız oldu, diğerine geçiliyor...`, error.response?.data || error.message);
-            getNextApiKey(); // Bir sonraki API key'e geç
+            getNextApiKey();
         }
     }
 
-    message.reply("❌ Günlük istek sınırına ulaşıldı.");
+    message.reply("❌ Günlük istek sınırına ulaşıldı veya tüm API key'ler başarısız oldu.");
 }
 
 
