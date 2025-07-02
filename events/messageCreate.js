@@ -165,13 +165,7 @@ module.exports = {
             medyaLimitleri.set(userId, kullaniciVerisi);
         }
 
-        if (
-            message.mentions.has(client.user) &&
-            !message.author.bot &&
-            message.channel.id === TABOT_KANALI
-        ) {
-            return geminiYanıtVer(message);
-        }
+      
     }
 };
 
