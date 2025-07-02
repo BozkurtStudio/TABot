@@ -10,7 +10,7 @@ module.exports = {
 
         
         const durumlar = [
-          { status: "online", activity: { name: "Bana bir şeyler sor! 😊", type: 0 } },
+          { status: "idle", activity: { name: "Bana bir şeyler sor! 💫", type: 0 } },
           { status: "idle", activity: { name: "TAB Community", type: 3 } },
         ];
     
