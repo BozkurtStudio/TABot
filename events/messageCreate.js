@@ -9,6 +9,8 @@ const LIMIT = 15;
 const SURE_MS = 60 * 60 * 1000;
 const KANAL_ID = "1381741570562199673";
 const TABOT_KANALI = "1390010316678762556";
+const cooldowns = new Collection();
+const COOLDOWN_MS = 20 * 1000;
 
 
 const apiKeys = [
@@ -63,10 +65,25 @@ Biri sana selam verdiğinde 'Merhaba ben TABot! Sana nasıl yardımcı olabiliri
 }
 
 async function geminiYanıtVer(message) {
+    const userId = message.author.id;
+    const now = Date.now();
+
+    if (cooldowns.has(userId)) {
+        const kalan = cooldowns.get(userId) - now;
+        if (kalan > 0) {
+            const saniye = Math.ceil(kalan / 1000);
+            return message.reply(`⏳ Lütfen ${saniye} saniye beklemeden tekrar yazma.`);
+        }
+    }
+
+    cooldowns.set(userId, now + COOLDOWN_MS);
+    setTimeout(() => cooldowns.delete(userId), COOLDOWN_MS);
+
+
     const prompt = message.content.replace(`<@${message.client.user.id}>`, "").trim();
     if (!prompt) return;
 
-    const userId = message.author.id;
+
     const gecmis = sohbetGecmisi.get(userId) || [];
 
     const MAX_PAIRS = 20;
@@ -165,7 +182,13 @@ module.exports = {
             medyaLimitleri.set(userId, kullaniciVerisi);
         }
 
-      
+        if (
+            message.mentions.has(client.user) &&
+            !message.author.bot &&
+            message.channel.id === TABOT_KANALI
+        ) {
+            return geminiYanıtVer(message);
+        }
     }
 };
 
