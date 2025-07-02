@@ -10,7 +10,7 @@ const SURE_MS = 60 * 60 * 1000;
 const KANAL_ID = "1381741570562199673";
 const TABOT_KANALI = "1390010316678762556";
 const cooldowns = new Collection();
-const COOLDOWN_MS = 30 * 1000;
+const COOLDOWN_MS = 15 * 1000;
 
 
 const apiKeys = [
@@ -72,9 +72,14 @@ async function geminiYanıtVer(message) {
         const kalan = cooldowns.get(userId) - now;
         if (kalan > 0) {
             const saniye = Math.ceil(kalan / 1000);
-            return message.reply(`⏳ Lütfen ${saniye} saniye beklemeden tekrar yazma.`);
+            const msg = await message.reply(`⏳ Lütfen ${saniye} saniye beklemeden tekrar yazma.`);
+            setTimeout(() => {
+                msg.delete().catch(() => { });
+            }, COOLDOWN_MS);
+            return;
         }
     }
+
 
     cooldowns.set(userId, now + COOLDOWN_MS);
     setTimeout(() => cooldowns.delete(userId), COOLDOWN_MS);
