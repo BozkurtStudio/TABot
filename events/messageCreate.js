@@ -10,7 +10,7 @@ const SURE_MS = 60 * 60 * 1000;
 const KANAL_ID = "1381741570562199673";
 const TABOT_KANALI = "1390010316678762556";
 const cooldowns = new Collection();
-const COOLDOWN_MS = 20 * 1000;
+const COOLDOWN_MS = 30 * 1000;
 
 
 const apiKeys = [
