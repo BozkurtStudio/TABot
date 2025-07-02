@@ -75,7 +75,7 @@ async function geminiYanıtVer(message) {
             const msg = await message.reply(`⏳ Lütfen ${saniye} saniye beklemeden tekrar yazma.`);
             setTimeout(() => {
                 msg.delete().catch(() => { });
-            }, COOLDOWN_MS);
+            }, kalan);
             return;
         }
     }
