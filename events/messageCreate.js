@@ -115,7 +115,7 @@ async function geminiYanıtVer(message) {
                 model: "gemini-2.5-flash",
                 contents,
                 config: {
-                    thinkingConfig: { thinkingBudget: 0 }, // Thinking kapalı
+                    thinkingConfig: { thinkingBudget: 0 },
                     systemInstruction
                 }
             });
@@ -126,9 +126,17 @@ async function geminiYanıtVer(message) {
                 gecmis.push({ role: "model", parts: [{ text: yanit }] });
                 sohbetGecmisi.set(userId, gecmis);
 
-                return message.reply(yanit.slice(0, 2000));
+                try {
+                    return await message.reply(yanit.slice(0, 2000));
+                } catch (mesajHatasi) {
+                    console.error("Mesaj gönderilirken hata:", mesajHatasi);
+                }
             } else {
-                return message.reply("❗ Gemini'den geçerli bir cevap alınamadı.");
+                try {
+                    return await message.reply("❗ Gemini'den geçerli bir cevap alınamadı.");
+                } catch (mesajHatasi) {
+                    console.error("Hata mesajı gönderilirken hata:", mesajHatasi);
+                }
             }
         } catch (error) {
             console.error(`API Key ${apiKey} başarısız oldu:`, error.response?.data || error.message);
