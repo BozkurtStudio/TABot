@@ -10,7 +10,7 @@ const SURE_MS = 60 * 60 * 1000;
 const KANAL_ID = "1381741570562199673";
 const TABOT_KANALI = "1390010316678762556";
 const cooldowns = new Collection();
-const COOLDOWN_MS = 15 * 1000;
+const COOLDOWN_MS = 10 * 1000;
 
 
 const apiKeys = [
@@ -116,7 +116,10 @@ async function geminiYanıtVer(message) {
                 contents,
                 config: {
                     thinkingConfig: { thinkingBudget: 0 },
-                    systemInstruction
+                    systemInstruction,
+                    generationConfig: {
+                        maxOutputTokens: 1024
+                    }
                 }
             });
 
@@ -127,7 +130,17 @@ async function geminiYanıtVer(message) {
                 sohbetGecmisi.set(userId, gecmis);
 
                 try {
-                    return await message.reply(yanit.slice(0, 2000));
+                    if (yanit.length <= 2000) {
+                        return await message.reply(yanit);
+                    } else {
+                        const embed = new EmbedBuilder()
+                            .setColor(Math.floor(Math.random() * 0xffffff)) // isteğe göre değiştirilebilir
+                            .setTitle("Cevabım:")
+                            .setTimestamp()
+                            .setDescription(yanit.slice(0, 4096)); // embed description sınırı
+                        return await message.reply({ embeds: [embed] });
+                    }
+
                 } catch (mesajHatasi) {
                     console.error("Mesaj gönderilirken hata:", mesajHatasi);
                 }
@@ -142,6 +155,7 @@ async function geminiYanıtVer(message) {
             console.error(`API Key ${apiKey} başarısız oldu:`, error.response?.data || error.message);
             getNextApiKey();
         }
+
     }
 
     message.reply("❌ Tüm API anahtarları sınırına ulaştı veya başarısız oldu.");
