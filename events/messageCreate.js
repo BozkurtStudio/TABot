@@ -178,7 +178,7 @@ module.exports = {
         // Selam kontrolü
         const msg = message.content.toLowerCase().trim();
         const selamlar = ["sa", "selam", "selamunaleyküm", "selamun aleyküm", "selamun aleykum", "merhaba", "selamlar"];
-        if (selamlar.includes(msg)) {
+        if (selamlar.includes(msg) && !message.reference) {
             message.reply("Aleykümselam, **hoş geldin.**");
         }
 
