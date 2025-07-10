@@ -1,4 +1,4 @@
-const { Collection, EmbedBuilder, PermissionsBitField } = require("discord.js");
+const { Collection, EmbedBuilder, PermissionsBitField, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const { GoogleGenAI } = require("@google/genai");
 const fs = require("fs");
 const path = require("path");
@@ -115,6 +115,7 @@ async function geminiYanıtVer(message) {
                 model: "gemini-2.5-flash",
                 contents,
                 config: {
+                    tools: [{ googleSearch: {} }],
                     thinkingConfig: { thinkingBudget: 0 },
                     systemInstruction,
                     generationConfig: {
@@ -124,21 +125,22 @@ async function geminiYanıtVer(message) {
             });
 
             const yanit = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text;
+            
             if (yanit) {
+                const kaynaklar = kaynakLinkleriniAl(response);
                 gecmis.push({ role: "user", parts: [{ text: prompt }] });
                 gecmis.push({ role: "model", parts: [{ text: yanit }] });
                 sohbetGecmisi.set(userId, gecmis);
 
                 try {
                     if (yanit.length <= 2000) {
-                        return await message.reply(yanit);
+                        return await message.reply({ content: yanit, components: kaynaklar });
                     } else {
                         const embed = new EmbedBuilder()
                             .setColor(Math.floor(Math.random() * 0xffffff)) // isteğe göre değiştirilebilir
                             .setTitle("Cevabım:")
-                            .setTimestamp()
                             .setDescription(yanit.slice(0, 4096)); // embed description sınırı
-                        return await message.reply({ embeds: [embed] });
+                        return await message.reply({ embeds: [embed], components: kaynaklar });
                     }
 
                 } catch (mesajHatasi) {
@@ -160,6 +162,35 @@ async function geminiYanıtVer(message) {
 
     message.reply("❌ Tüm API anahtarları sınırına ulaştı veya başarısız oldu.");
 }
+
+function kaynakLinkleriniAl(response) {
+    const metadata = response.candidates?.[0]?.groundingMetadata;
+    const chunks = metadata?.groundingChunks || [];
+
+    const buttons = chunks
+        .map((chunk) => {
+            const uri = chunk.web?.uri;
+            const title = chunk.web?.title || uri;
+            return uri
+                ? new ButtonBuilder()
+                      .setLabel(`${title.slice(0, 80)}`)
+                      .setStyle(ButtonStyle.Link)
+                      .setURL(uri)
+                : null;
+        })
+        .filter(Boolean);
+
+    if (buttons.length === 0) return [];
+
+    // Discord max 5 buton per row → bölmek gerekir
+    const rows = [];
+    for (let i = 0; i < buttons.length; i += 5) {
+        rows.push(new ActionRowBuilder().addComponents(buttons.slice(i, i + 5)));
+    }
+
+    return rows;
+}
+
 
 
 module.exports = {
