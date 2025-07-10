@@ -167,22 +167,27 @@ function kaynakLinkleriniAl(response) {
     const metadata = response.candidates?.[0]?.groundingMetadata;
     const chunks = metadata?.groundingChunks || [];
 
+    const isValidUrl = (url) =>
+        typeof url === "string" && /^https?:\/\/[^\s]+$/.test(url);
+
     const buttons = chunks
         .map((chunk) => {
             const uri = chunk.web?.uri;
             const title = chunk.web?.title || uri;
-            return uri
-                ? new ButtonBuilder()
-                      .setLabel(`${title.slice(0, 80)}`)
-                      .setStyle(ButtonStyle.Link)
-                      .setURL(uri)
-                : null;
+
+            // URL geçerli değilse buton oluşturma
+            if (!isValidUrl(uri)) return null;
+
+            return new ButtonBuilder()
+                .setLabel(`${title.slice(0, 80)}`)
+                .setStyle(ButtonStyle.Link)
+                .setURL(uri);
         })
         .filter(Boolean);
 
     if (buttons.length === 0) return [];
 
-    // Discord max 5 buton per row → bölmek gerekir
+    // 5'li satırlara böl
     const rows = [];
     for (let i = 0; i < buttons.length; i += 5) {
         rows.push(new ActionRowBuilder().addComponents(buttons.slice(i, i + 5)));
@@ -190,6 +195,7 @@ function kaynakLinkleriniAl(response) {
 
     return rows;
 }
+
 
 
 
