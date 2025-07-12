@@ -3,12 +3,7 @@ const { GoogleGenAI } = require("@google/genai");
 const fs = require("fs");
 const path = require("path");
 
-
-const medyaLimitleri = new Collection();
-const LIMIT = 15;
-const SURE_MS = 60 * 60 * 1000;
-const KANAL_ID = "1381741570562199673";
-const TABOT_KANALI = "1390010316678762556";
+const TABOT_KANALI = "1071543490741280779";
 const cooldowns = new Collection();
 const COOLDOWN_MS = 10 * 1000;
 
@@ -217,33 +212,6 @@ module.exports = {
         const selamlar = ["sa", "selam", "selamunaleyküm", "selamun aleyküm", "selamun aleykum", "merhaba", "selamlar"];
         if (selamlar.includes(msg) && !message.reference) {
             message.reply("Aleykümselam, **hoş geldin.**");
-        }
-
-        // ===== Medya spam engeli =====
-        if (message.channel.id === KANAL_ID && message.attachments.size > 0) {
-            if (message.member.permissions.has(PermissionsBitField.Flags.Administrator)) return;
-
-            const userId = message.author.id;
-            const now = Date.now();
-
-            let kullaniciVerisi = medyaLimitleri.get(userId) || [];
-            kullaniciVerisi = kullaniciVerisi.filter(zaman => now - zaman < SURE_MS);
-
-            if (kullaniciVerisi.length >= LIMIT) {
-                message.delete().catch(() => { });
-                const embed = new EmbedBuilder()
-                    .setColor(0xFF0000) // Kırmızı renk
-                    .setTitle("⚠️ Medya Limiti Aşıldı")
-                    .setDescription(`<@${userId}>, bu kanala **1 saat** içinde en fazla **${LIMIT} medya** gönderebilirsin.`)
-                    .setTimestamp();
-                message.channel.send({ embeds: [embed] }).then((msg) => {
-                    setTimeout(() => msg.delete().catch(() => { }), 3000);
-                });
-                return;
-            }
-
-            kullaniciVerisi.push(now);
-            medyaLimitleri.set(userId, kullaniciVerisi);
         }
 
         if (
