@@ -3,7 +3,7 @@ const { GoogleGenAI } = require("@google/genai");
 const fs = require("fs");
 const path = require("path");
 
-const TABOT_KANALI = "1071543490741280779";
+const TABOT_KANALI = "1390010316678762556";
 const cooldowns = new Collection();
 const COOLDOWN_MS = 10 * 1000;
 
