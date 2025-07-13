@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Birlikte İzle</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    video {
+      max-width: 90vw;
+      max-height: 90vh;
+    }
+  </style>
+</head>
+
+<body>
+  <video id="video" controls>
+    <source id="source" src="" type="video/mp4">
+    Tarayıcınız video etiketini desteklemiyor.
+  </video>
+
+  <script>
+    const socket = io();
+    const video = document.getElementById("video");
+    const source = document.getElementById("source");
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get("room");
+
+    let isAdmin = false;
+    let isSyncing = false;
+
+    // Admin şifre kontrolü
+    const password = localStorage.getItem(`room_admin_${roomId}`) || prompt("Eğer bu odanın admin'iyseniz şifrenizi girin (diğerleri boş bırakabilir):");
+    if (password) {
+      localStorage.setItem(`room_admin_${roomId}`, password);
+    }
+
+    socket.emit("join-room", { roomId, password });
+
+    // Admin atanırsa video kontrolü açılır ve buton gösterilir
+    socket.on("admin-granted", () => {
+      isAdmin = true;
+      video.controls = true;
+
+      const btn = document.createElement("button");
+      btn.textContent = "🎬 Videoyu Değiştir";
+      btn.style.position = "fixed";
+      btn.style.top = "20px";
+      btn.style.left = "20px";
+      btn.style.zIndex = 1000;
+      btn.onclick = () => {
+        const newUrl = prompt("Yeni .mp4 bağlantısını girin:");
+        if (newUrl && newUrl.endsWith(".mp4")) {
+          socket.emit("change-video", { roomId, newUrl });
+        } else {
+          alert("Geçersiz bağlantı!");
+        }
+      };
+      document.body.appendChild(btn);
+    });
+
+    // Video yüklendiğinde kaynak ayarla
+    socket.on("load-video", ({ videoUrl }) => {
+      source.src = videoUrl;
+      video.load();
+    });
+
+    // Admin video olaylarını gönderir
+    ["play", "pause", "seeking"].forEach(event => {
+      video.addEventListener(event, () => {
+        if (isAdmin && !isSyncing) {
+          socket.emit("video-event", {
+            roomId,
+            type: event === "seeking" ? "seek" : event,
+            currentTime: video.currentTime
+          });
+        }
+      });
+    });
+
+    // Eski olay tabanlı senkronizasyon (gerekirse dursun)
+    socket.on("video-event", ({ type, currentTime }) => {
+      isSyncing = true;
+
+      if (Math.abs(video.currentTime - currentTime) > 0.2) {
+        video.currentTime = currentTime;
+      }
+
+      if (type === "play") video.play();
+      else if (type === "pause") video.pause();
+
+      isSyncing = false;
+    });
+
+    // ✅ Yeni: Admin her saniye video durumunu gönderir
+    setInterval(() => {
+      if (isAdmin) {
+        socket.emit("sync-status", {
+          roomId,
+          currentTime: video.currentTime,
+          paused: video.paused
+        });
+      }
+    }, 1000);
+
+    // ✅ Yeni: İzleyiciler admin'e göre her saniye senkronize olur
+    socket.on("sync-status", ({ currentTime, paused }) => {
+      if (!isAdmin) {
+        const diff = Math.abs(video.currentTime - currentTime);
+        if (diff > 0.3) {
+          video.currentTime = currentTime;
+        }
+
+        if (paused && !video.paused) {
+          video.pause();
+        } else if (!paused && video.paused) {
+          video.play();
+        }
+      }
+    });
+socket.on("room-closed", () => {
+  // Videoyu durdur
+  video.pause();
+  video.controls = false;
+
+  // Ekrana mesaj göster
+  const msg = document.createElement("div");
+  msg.textContent = "Odanın admini ayrıldı. Oturum sona erdi.";
+  msg.style.position = "fixed";
+  msg.style.top = "50%";
+  msg.style.left = "50%";
+  msg.style.transform = "translate(-50%, -50%)";
+  msg.style.background = "#222";
+  msg.style.color = "#fff";
+  msg.style.padding = "20px 30px";
+  msg.style.borderRadius = "10px";
+  msg.style.fontSize = "18px";
+  msg.style.boxShadow = "0 4px 12px rgba(0,0,0,0.4)";
+  msg.style.zIndex = "9999";
+  document.body.appendChild(msg);
+});
+
+
+  </script>
+</body>
+
+</html>
