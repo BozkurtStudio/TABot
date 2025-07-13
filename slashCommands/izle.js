@@ -18,7 +18,7 @@ module.exports = {
       videoUrl: null
     };
 
-    const watchLink = `http://localhost:3000/watch?room=${roomId}`;
+    const watchLink = `https://tabot-pje1.onrender.com/watch?room=${roomId}`;
 
      const embed = new EmbedBuilder()
       .setColor("Green")
