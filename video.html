@@ -60,33 +60,23 @@
       btn.style.left = "20px";
       btn.style.zIndex = 1000;
       btn.onclick = () => {
-        const newUrl = prompt("Yeni .mp4 veya .m3u8 bağlantısını girin:");
+        const newUrl = prompt("Yeni video bağlantısını girin:");
         try {
           const parsed = new URL(newUrl);
-          if (parsed.pathname.endsWith(".mp4") || parsed.pathname.endsWith(".m3u8")) {
-            socket.emit("change-video", { roomId, newUrl });
-          } else {
-            alert("Geçersiz bağlantı! Yalnızca .mp4 veya .m3u8 uzantılı dosyalar destekleniyor.");
-          }
+          socket.emit("change-video", { roomId, newUrl });
         } catch (e) {
           alert("Geçersiz bağlantı formatı!");
         }
       };
+
 
       document.body.appendChild(btn);
     });
 
     // Video yüklendiğinde kaynak ayarla
     socket.on("load-video", ({ videoUrl }) => {
-      if (Hls.isSupported() && videoUrl.endsWith(".m3u8")) {
-        const hls = new Hls();
-        hls.loadSource(videoUrl);
-        hls.attachMedia(video);
-      } else {
-        // mp4 dosyaları için klasik yöntem
-        source.src = videoUrl;
-        video.load();
-      }
+      source.src = videoUrl;
+      video.load();
     });
 
 

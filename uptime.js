@@ -54,14 +54,18 @@ io.on("connection", (socket) => {
 
   socket.on("change-video", ({ roomId, newUrl }) => {
     const room = global.rooms?.[roomId];
-    if (
-      room?.adminSocketId === socket.id &&
-      (newUrl.endsWith(".mp4") || newUrl.includes(".m3u8"))
-    ) {
-      room.videoUrl = newUrl;
-      io.to(roomId).emit("load-video", { videoUrl: newUrl });
-    }
 
+    // Admin kontrolü
+    if (room?.adminSocketId === socket.id) {
+      // Sadece geçerli URL'leri kabul et (örnek: http veya https ile başlamalı)
+      try {
+        const parsed = new URL(newUrl);
+        room.videoUrl = newUrl;
+        io.to(roomId).emit("load-video", { videoUrl: newUrl });
+      } catch (err) {
+        console.log("Geçersiz URL formatı:", newUrl);
+      }
+    }
   });
 
   socket.on("sync-status", ({ roomId, currentTime, paused }) => {
@@ -86,7 +90,6 @@ io.on("connection", (socket) => {
   });
 
 });
-
 
 // Sunucuyu başlat
 server.listen(port, () => {
