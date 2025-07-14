@@ -54,10 +54,14 @@ io.on("connection", (socket) => {
 
   socket.on("change-video", ({ roomId, newUrl }) => {
     const room = global.rooms?.[roomId];
-    if (room?.adminSocketId === socket.id && newUrl.endsWith(".mp4")) {
+    if (
+      room?.adminSocketId === socket.id &&
+      (newUrl.endsWith(".mp4") || newUrl.includes(".m3u8"))
+    ) {
       room.videoUrl = newUrl;
       io.to(roomId).emit("load-video", { videoUrl: newUrl });
     }
+
   });
 
   socket.on("sync-status", ({ roomId, currentTime, paused }) => {

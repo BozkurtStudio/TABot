@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <title>Birlikte İzle</title>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     body {
       margin: 0;
@@ -59,21 +60,35 @@
       btn.style.left = "20px";
       btn.style.zIndex = 1000;
       btn.onclick = () => {
-        const newUrl = prompt("Yeni .mp4 bağlantısını girin:");
-        if (newUrl && newUrl.endsWith(".mp4")) {
-          socket.emit("change-video", { roomId, newUrl });
-        } else {
-          alert("Geçersiz bağlantı!");
+        const newUrl = prompt("Yeni .mp4 veya .m3u8 bağlantısını girin:");
+        try {
+          const parsed = new URL(newUrl);
+          if (parsed.pathname.endsWith(".mp4") || parsed.pathname.endsWith(".m3u8")) {
+            socket.emit("change-video", { roomId, newUrl });
+          } else {
+            alert("Geçersiz bağlantı! Yalnızca .mp4 veya .m3u8 uzantılı dosyalar destekleniyor.");
+          }
+        } catch (e) {
+          alert("Geçersiz bağlantı formatı!");
         }
       };
+
       document.body.appendChild(btn);
     });
 
     // Video yüklendiğinde kaynak ayarla
     socket.on("load-video", ({ videoUrl }) => {
-      source.src = videoUrl;
-      video.load();
+      if (Hls.isSupported() && videoUrl.endsWith(".m3u8")) {
+        const hls = new Hls();
+        hls.loadSource(videoUrl);
+        hls.attachMedia(video);
+      } else {
+        // mp4 dosyaları için klasik yöntem
+        source.src = videoUrl;
+        video.load();
+      }
     });
+
 
     // Admin video olaylarını gönderir
     ["play", "pause", "seeking"].forEach(event => {
@@ -128,27 +143,27 @@
         }
       }
     });
-socket.on("room-closed", () => {
-  // Videoyu durdur
-  video.pause();
-  video.controls = false;
+    socket.on("room-closed", () => {
+      // Videoyu durdur
+      video.pause();
+      video.controls = false;
 
-  // Ekrana mesaj göster
-  const msg = document.createElement("div");
-  msg.textContent = "Odanın admini ayrıldı. Oturum sona erdi.";
-  msg.style.position = "fixed";
-  msg.style.top = "50%";
-  msg.style.left = "50%";
-  msg.style.transform = "translate(-50%, -50%)";
-  msg.style.background = "#222";
-  msg.style.color = "#fff";
-  msg.style.padding = "20px 30px";
-  msg.style.borderRadius = "10px";
-  msg.style.fontSize = "18px";
-  msg.style.boxShadow = "0 4px 12px rgba(0,0,0,0.4)";
-  msg.style.zIndex = "9999";
-  document.body.appendChild(msg);
-});
+      // Ekrana mesaj göster
+      const msg = document.createElement("div");
+      msg.textContent = "Odanın admini ayrıldı. Oturum sona erdi.";
+      msg.style.position = "fixed";
+      msg.style.top = "50%";
+      msg.style.left = "50%";
+      msg.style.transform = "translate(-50%, -50%)";
+      msg.style.background = "#222";
+      msg.style.color = "#fff";
+      msg.style.padding = "20px 30px";
+      msg.style.borderRadius = "10px";
+      msg.style.fontSize = "18px";
+      msg.style.boxShadow = "0 4px 12px rgba(0,0,0,0.4)";
+      msg.style.zIndex = "9999";
+      document.body.appendChild(msg);
+    });
 
 
   </script>
