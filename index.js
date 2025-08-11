@@ -86,13 +86,6 @@ try {
 
 // =================================================================
 // [LOG 12] Uptime web sunucusu başlatılıyor...
-console.log('[LOG 12] Uptime web sunucusu başlatılıyor...');
-try {
-  require("./uptime");
-  console.log('[LOG 13] Uptime web sunucusu başarıyla yüklendi/başlatıldı.');
-} catch (err) {
-  console.error('[HATA] Uptime sunucusu başlatılırken bir hata oluştu:', err);
-}
 
 // =================================================================
 // [LOG 14] Discord'a giriş yapılıyor...
@@ -113,4 +106,5 @@ if (!process.env.TOKEN) {
 client.once('ready', () => {
     console.log(`\n\n[BAŞARILI] Bot hazır! ${client.user.tag} olarak giriş yapıldı!\n\n`);
 });
+
 
