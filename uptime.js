@@ -7,7 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const port = process.env.PORT || 8080;;
+const port = process.env.PORT || 3000;;
 
 // Statik dosya sunumu (video.html için)
 app.use(express.static(__dirname));
@@ -95,4 +95,5 @@ io.on("connection", (socket) => {
 server.listen(port, "0.0.0.0", () => {
   console.log(`Web sunucusu ${port} portunda çalışıyor`);
 });
+
 
