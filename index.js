@@ -8,8 +8,12 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildVoiceStates
+
   ],
 });
+
+require("./distube")(client);
 
 client.slashCommands = new Collection();
 
@@ -40,4 +44,7 @@ for (const file of eventFiles) {
 // Web sunucusu (uptime için)
 require("./uptime");
 
-client.login(process.env.TOKEN);
+client.login(process.env.TOKEN).catch(err => {
+  console.error("Discord login failed:", err);
+  // process.exit() YAPMA! Yoksa Render portu kaybeder.
+});
