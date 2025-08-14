@@ -13,7 +13,6 @@ const client = new Client({
   ],
 });
 
-require("./distube")(client);
 
 client.slashCommands = new Collection();
 
@@ -48,3 +47,4 @@ client.login(process.env.TOKEN).catch(err => {
   console.error("Discord login failed:", err);
   // process.exit() YAPMA! Yoksa Render portu kaybeder.
 });
+
