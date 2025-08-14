@@ -42,10 +42,10 @@ for (const file of eventFiles) {
 
 // Web sunucusu (uptime için)
 
-
 client.login(process.env.TOKEN).catch(err => {
   console.error("Discord login failed:", err);
   // process.exit() YAPMA! Yoksa Render portu kaybeder.
 });
 
+require("./uptime");
 
