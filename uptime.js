@@ -92,6 +92,6 @@ io.on("connection", (socket) => {
 });
 
 // Sunucuyu başlat
-server.listen(port, () => {
+server.listen(port, "0.0.0.0", () => {
   console.log(`Web sunucusu ${port} portunda çalışıyor`);
 });
