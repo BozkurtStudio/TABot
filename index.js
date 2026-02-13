@@ -13,7 +13,13 @@ const client = new Client({
   ],
 });
 
+// Client tanımlamandan hemen sonrasına ekle:
 
+client.on("debug", (info) => console.log(`[DEBUG] ${info}`));
+client.on("warn", (info) => console.log(`[UYARI] ${info}`));
+client.on("error", (error) => console.error(`[HATA] ${error}`));
+
+// ... sonra diğer kodların gelsin
 client.slashCommands = new Collection();
 
 // Slash komutları yükle
@@ -56,4 +62,5 @@ client.login(process.env.TOKEN).then(() => {
 }).catch(err => {
     console.error("Discord login failed:", err);
 });
+
 
