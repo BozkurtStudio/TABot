@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Collection } = require("discord.js");
+ const { Client, GatewayIntentBits, Collection } = require("discord.js");
 require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
@@ -42,10 +42,18 @@ for (const file of eventFiles) {
 
 // Web sunucusu (uptime için)
 
-client.login(process.env.TOKEN).catch(err => {
-  console.error("Discord login failed:", err);
-  // process.exit() YAPMA! Yoksa Render portu kaybeder.
-});
-
 require("./uptime");
+// HATA AYIKLAMA KODU BAŞLANGICI
+if (!process.env.TOKEN) {
+    console.error("KRİTİK HATA: 'TOKEN' çevre değişkeni bulunamadı! Render Environment ayarlarını kontrol et.");
+} else {
+    console.log("Token değişkeni bulundu, giriş deneniyor...");
+}
+// HATA AYIKLAMA KODU BİTİŞİ
+
+client.login(process.env.TOKEN).then(() => {
+    console.log("Giriş Başarılı! (Main dosyasından onaylandı)");
+}).catch(err => {
+    console.error("Discord login failed:", err);
+});
 
