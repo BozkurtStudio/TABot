@@ -46,8 +46,6 @@ for (const file of eventFiles) {
   client.on(eventName, (...args) => event.execute(...args, client));
 }
 
-
-require("./uptime");
 // HATA AYIKLAMA KODU BAŞLANGICI
 if (!process.env.TOKEN) {
     console.error("KRİTİK HATA: 'TOKEN' çevre değişkeni bulunamadı! Render Environment ayarlarını kontrol et.");
@@ -61,6 +59,7 @@ client.login(process.env.TOKEN).then(() => {
 }).catch(err => {
     console.error("Discord login failed:", err);
 });
+
 
 
 
