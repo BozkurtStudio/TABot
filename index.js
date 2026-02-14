@@ -46,7 +46,6 @@ for (const file of eventFiles) {
   client.on(eventName, (...args) => event.execute(...args, client));
 }
 
-// Web sunucusu (uptime için)
 
 require("./uptime");
 // HATA AYIKLAMA KODU BAŞLANGICI
@@ -62,5 +61,6 @@ client.login(process.env.TOKEN).then(() => {
 }).catch(err => {
     console.error("Discord login failed:", err);
 });
+
 
 
